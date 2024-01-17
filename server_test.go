@@ -56,7 +56,7 @@ func TestGETPlayers(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusNotFound)
 	})
 }
 
@@ -68,7 +68,9 @@ func TestStoreWins(t *testing.T) {
 	server := &PlayerServer{&store}
 
 	t.Run("Armazena as vitórias em POST", func(t *testing.T) {
-		request := newPostWinRequest("victor")
+		player := "victor"
+
+		request := newPostWinRequest(player)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -76,7 +78,11 @@ func TestStoreWins(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusAccepted)
 
 		if len(store.winCalls) != 1 {
-			t.Errorf("Recebeu %d chamadas para RecordWin e quer %d", len(store.winCalls), 1)
+			t.Fatalf("Recebeu %d chamadas para RecordWin e quer %d", len(store.winCalls), 1)
+		}
+
+		if store.winCalls[0] != player {
+			t.Errorf("Não armazenou corretamente o vencedor, recebeu %q mas queria %q", store.winCalls[0], player)
 		}
 	})
 
